@@ -3,7 +3,6 @@
 use eframe::egui;
 use std::io::{self, Write};
 use std::time::{Instant, Duration};
-use std::thread::sleep;
 
 fn main() -> Result<(), eframe::Error> {
     
@@ -43,30 +42,34 @@ impl eframe::App for MyApp {
     
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
 //----------------------------------------------------------------------------------------------------------- 
-  let ports = serialport::available_ports().expect("No ports found!");
-  let mut port = serialport::new("COM3", 9600)
-  .timeout(Duration::from_millis(1000))
-  .open();
-  let mut Point_vector: Vec<egui::plot::PlotPoint> = Vec::new();
-  let mut serial_buf: Vec<u8> = Vec::new();
+let mut port = serialport::new("COM3", 9600)
+.timeout(Duration::from_millis(1000))
+.open();
+let mut Point_vector: Vec<egui::plot::PlotPoint> = Vec::new();
 
-  let start_time = Instant::now();
-  let duration = Duration::from_secs(5).as_secs_f64();
-  let duration_interval = Duration::from_millis(10);  
-  let mut buf_value: f64;
-  loop {
-    match port.as_mut().unwrap().read(serial_buf.as_mut_slice()) {
-    Ok(t) => {
-        buf_value = std::str::from_utf8(&serial_buf[..3]).unwrap().parse().unwrap();
-        Point_vector.push(egui::plot::PlotPoint::new((Instant::now()).duration_since(start_time).as_secs_f64(), buf_value/100.0));
-    },
-    Err(e) => eprintln!("{:?}", e),
+match port {
+    Ok(mut port) => {
+        let mut serial_buf: Vec<u8> = vec![0; 100];
+        let mut buf_value: f64;
+        let mut x: f64 = -100.0;
+        for i in 0..10 {
+            match port.read(serial_buf.as_mut_slice()) {
+                Ok(t) => { 
+                //io::stdout().write_all(&serial_buf[..t]).unwrap(); 
+                buf_value = std::str::from_utf8(&serial_buf[..3]).unwrap().parse().unwrap();
+                println!("{buf_value}");
+                x+=20.0;
+                Point_vector.push(egui::plot::PlotPoint::new(x, buf_value));
+                }
+                Err(ref e) if e.kind() == io::ErrorKind::TimedOut => (),
+                Err(e) => eprintln!("{:?}", e),
+            }
+        }
     }
-    sleep(duration_interval);
-    if (Instant::now()).duration_since(start_time).as_secs_f64() >= duration {
-       break;
+    Err(e) => {
+        ::std::process::exit(1);
     }
-    }
+}
 //-----------------------------------------------------------------------------------------------------------
     egui::CentralPanel::default().show(ctx, |ui| {
     if  ui.button("Exit").clicked(){
