@@ -5,38 +5,6 @@ use std::io::{self, Write};
 use std::time::{Instant, Duration};
 
 fn main() -> Result<(), eframe::Error> {
-
-    //----------------------------------------------------------------------------------------------------------- 
-let mut port = serialport::new("COM3", 9600)
-.timeout(Duration::from_millis(1000))
-.open();
-let mut Point_vector: Vec<egui::plot::PlotPoint> = Vec::new();
-
-match port {
-    Ok(mut port) => {
-        let mut serial_buf: Vec<u8> = vec![0; 100];
-        let mut buf_value: f64;
-        let mut x: f64 = -100.0;
-        for i in 0..10 {
-            match port.read(serial_buf.as_mut_slice()) {
-                Ok(t) => { 
-                //io::stdout().write_all(&serial_buf[..t]).unwrap(); 
-                if i > 0 {
-                buf_value = std::str::from_utf8(&serial_buf[..t]).unwrap().parse().unwrap();
-                println!("{buf_value}");
-                x+=20.0;
-                Point_vector.push(egui::plot::PlotPoint::new(x, buf_value));}
-                }
-                Err(ref e) if e.kind() == io::ErrorKind::TimedOut => (),
-                Err(e) => eprintln!("{:?}", e),
-            }
-        }
-    }
-    Err(e) => {
-        ::std::process::exit(1);
-    }
-}
-//-----------------------------------------------------------------------------------------------------------
     
     env_logger::init(); // Log to stderr (if you run with `RUST_LOG=debug`).
     let options = eframe::NativeOptions {
@@ -73,7 +41,37 @@ impl Default for MyApp {
 impl eframe::App for MyApp {
     
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+//----------------------------------------------------------------------------------------------------------- 
+let mut port = serialport::new("COM3", 9600)
+.timeout(Duration::from_millis(1000))
+.open();
+let mut Point_vector: Vec<egui::plot::PlotPoint> = Vec::new();
 
+match port {
+    Ok(mut port) => {
+        let mut serial_buf: Vec<u8> = vec![0; 100];
+        let mut buf_value: f64;
+        let mut x: f64 = -100.0;
+        for i in 0..10 {
+            match port.read(serial_buf.as_mut_slice()) {
+                Ok(t) => { 
+                //io::stdout().write_all(&serial_buf[..t]).unwrap(); 
+                if i > 0 {
+                buf_value = std::str::from_utf8(&serial_buf[..t]).unwrap().parse().unwrap();
+                println!("{buf_value}");
+                x+=20.0;
+                Point_vector.push(egui::plot::PlotPoint::new(x, buf_value));}
+                }
+                Err(ref e) if e.kind() == io::ErrorKind::TimedOut => (),
+                Err(e) => eprintln!("{:?}", e),
+            }
+        }
+    }
+    Err(e) => {
+        ::std::process::exit(1);
+    }
+}
+//-----------------------------------------------------------------------------------------------------------
     egui::CentralPanel::default().show(ctx, |ui| {
     if  ui.button("Exit").clicked(){
     _frame.close();
