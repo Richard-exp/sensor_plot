@@ -15,10 +15,9 @@ fn main() -> Result<(), eframe::Error> {
     };
 
     // Our application state:
-    let app_1 = SensorData::new();
+    let mut app_1 = SensorData::new();
     app_1.read_data();
-    let app_2 = app_1;
-    let points = app_2.get_points();
+    let points = app_1.get_points();
 
     eframe::run_simple_native ("My egui App", options, move |ctx, _frame| {
         egui::CentralPanel::default().show(ctx, |ui| {

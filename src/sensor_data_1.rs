@@ -19,8 +19,8 @@ impl SensorData {
                 .expect("Unable to connect COM port"),
         }
     }
-    pub fn read_data(mut self) {
-        thread::spawn(move || {
+    pub fn read_data(&mut self) {
+        thread::spawn(|| {
             let mut serial_buf: Vec<u8> = vec![0; 100];
             let mut buf_value: f64;
            
@@ -40,9 +40,9 @@ impl SensorData {
                     }
                     Err(ref e) if e.kind() == io::ErrorKind::TimedOut => (),
                     Err(e) => eprintln!("{:?}", e),
-                }  
+                } 
             }
-        }).join().expect("The read_data thread has panicked");
+        });
     }
     
     pub fn get_points(self) -> VecDeque<egui::plot::PlotPoint>{
