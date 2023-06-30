@@ -1,20 +1,22 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
 
 mod sensor_data_1;
-use sensor_data_1::SensorData;
+// use sensor_data_1::SensorData;
 
 use eframe::egui;
-use egui::Vec2;
-use std::io::{self, Write};
+// use egui::Vec2;
+// use std::io::{self, Write};
 
 use std::collections::VecDeque;
-use std::sync::{Arc, Mutex};
-use std::thread;
+// use std::sync::{Arc, Mutex};
+// use std::thread;
+
+use serialport::SerialPort;
 
 fn main() -> Result<(), eframe::Error> {
 
-    let mut app = MyApp::new();
-    app.data.read_data();
+    let mut app = MyApp::new_App();
+    sensor_data_1::SensorData::read_data(app);
 
     env_logger::init(); // Log to stderr (if you run with `RUST_LOG=debug`).
     let options = eframe::NativeOptions {
@@ -31,17 +33,15 @@ fn main() -> Result<(), eframe::Error> {
 }
 
 pub struct MyApp {
-   data: SensorData,
-   pub values: VecDeque<egui::plot::PlotPoint>,
-   x: u64,
+    pub values: VecDeque<egui::plot::PlotPoint>,
+    pub port: Box<dyn SerialPort>,
 }
 
 impl MyApp {
-    fn new() -> Self {
+    fn new_App() -> Self {
         Self {
-            data: SensorData::new(),
             values: VecDeque::new(),
-            x: 5,
+            port: sensor_data_1::new_port(),
         }   
     }    
 }

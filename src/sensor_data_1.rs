@@ -3,24 +3,25 @@ use serialport::SerialPort;
 use std::collections::VecDeque;
 use std::thread;
 use std::time::{Duration, Instant};
-use std::io::{self, Write};
+
+use crate::MyApp;
+// use std::io::{self, Write};
 pub struct SensorData {
     pub values: VecDeque<egui::plot::PlotPoint>,
     port: Box<dyn SerialPort>,
+    another: MyApp,
 }
 
-impl SensorData {
-    pub fn new() -> Self {
-        Self {
-            values: VecDeque::new(),
-            port: serialport::new("COM3", 9600)
+
+    pub fn new_port() -> Box<dyn SerialPort> {
+            serialport::new("COM3", 9600)
                 .timeout(Duration::from_millis(1000))
                 .open()
-                .expect("Unable to connect COM port"),
-        }
+                .expect("Unable to connect COM port")
     }
-    pub fn read_data(&mut self) {
-       // thread::spawn(|| {
+  impl SensorData {
+    pub fn read_data (self) {
+        thread::spawn(|| {
             let mut serial_buf: Vec<u8> = vec![0; 100];
             let mut buf_value: f64;
            
@@ -42,14 +43,14 @@ impl SensorData {
                     Err(e) => eprintln!("{:?}", e),
                 } 
             }
- //       });
+        });
     }
     
-    pub fn get_points(self) -> VecDeque<egui::plot::PlotPoint>{
-        return self.values;
-    }
+    // pub fn get_points() -> VecDeque<egui::plot::PlotPoint>{
+    //     return self.values;
+    // }
 
-    pub fn print_points(self) {
-        println!("{:?}", self.values);
-    }
+    // pub fn print_points() {
+    //     println!("{:?}", self.values);
+    // }
 }
