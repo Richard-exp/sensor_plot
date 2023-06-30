@@ -20,7 +20,7 @@ impl SensorData {
         }
     }
     pub fn read_data(&mut self) {
-        thread::spawn(|| {
+       // thread::spawn(|| {
             let mut serial_buf: Vec<u8> = vec![0; 100];
             let mut buf_value: f64;
            
@@ -42,7 +42,7 @@ impl SensorData {
                     Err(e) => eprintln!("{:?}", e),
                 } 
             }
-        });
+ //       });
     }
     
     pub fn get_points(self) -> VecDeque<egui::plot::PlotPoint>{
